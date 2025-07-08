@@ -1,0 +1,278 @@
+# Ghiotto Andrea   2118418
+
+
+
+To import the docker image of dave simulator (ex.: new_dave.tar):
+docker load -i /path/to/new_dave.tar
+
+
+
+To visualize all docker images:
+sudo docker images
+
+
+
+Run the docker container:
+sudo docker run --gpus all --user root -v /tmp/.X11-unix:/tmp/.X11-unix -e DISPLAY=$DISPLAY -it new_dave
+
+
+
+Run the docker container using flag -v (in this case we are "connecting" the 'tmp' folder in the container with the 'container' folder in the Desktop):
+sudo docker run --gpus all --user root -v /home/firp/Desktop/Container:/tmp -v /tmp/.X11-unix:/tmp/.X11-unix -e DISPLAY=$DISPLAY -it new_dave
+
+
+
+To see the list of containers:
+sudo docker ps -a
+
+
+
+To restart a not running container (XXXX to be replaced with container's ID):
+sudo docker start XXXX
+
+
+
+To enter inside a running container (XXXX to be replaced with container's ID):
+sudo docker exec -it XXXX /bin/bash
+
+
+
+To exit from the shell of the container:
+exit
+
+
+
+To stop a running container (XXXX to be replaced with container's ID):
+sudo docker stop XXXX
+
+
+
+To remove a container (XXXX to be replaced with container's ID):
+sudo docker rm XXXX
+
+
+
+To remove a list of containers (for example the ones with the same image, XXXX to be replaced with the image's name):
+sudo docker rm $(sudo docker ps -a -q -f "ancestor=XXXX")
+
+
+
+To test the sonar, inside the docker container, execute the following commmands:
+cd ~/uuv_ws
+source ~/uuv_ws/devel/setup.bash
+roslaunch nps_uw_multibeam_sonar sonar_tank_blueview_p900_nps_multibeam.launch
+
+
+
+To launch the real simulation:
+source ~/uuv_ws/devel/setup.bash
+roslaunch nps_uw_multibeam_sonar trieste_inspection_try.launch
+
+
+
+To find sonar iamges:
+find /tmp -name "SonarImage_capture_*.jpg"
+
+
+
+To remove one specific sonar image (XXXX to be replaced with specific ID):
+rm /tmp/SonarImage_capture_XXXX.jpg
+
+
+
+To remove all sonar images:
+rm /tmp/SonarImage_capture_*.jpg
+
+
+
+To remove a folder inside the container (and all its subfolders):
+rm -r /folder/path
+
+
+
+To (manually) copy sonar images (XXXX to be replaced with container's ID):
+
+Create a tmp folder named sonar_images
+sudo docker exec XXXX bash -c "mkdir -p /tmp/sonar_images"
+
+Copy images inside this folder
+sudo docker exec XXXX bash -c "cp /tmp/SonarImage_capture_* /tmp/sonar_images/"
+
+If you want to combine the two commands above
+sudo docker exec XXXX bash -c "mkdir -p /tmp/sonar_images && cp /tmp/SonarImage_capture_* /tmp/sonar_images/"
+
+Copy the folder in your PC
+sudo docker cp XXXX:/tmp/sonar_images ~/Desktop
+
+
+
+To modify permission of a folder (ex.: folder Test in the Desktop):
+sudo chown -R firp:firp /home/firp/Desktop/Test/
+
+
+
+To open in the container a file from the Desktop (the file needs to be in the folder specified in the -v flag, ex.: images folder in the Desktop):
+
+Reach the mounted folder in the container (ex.: tmp folder in the container)
+cd /tmp
+
+Open the file (ex.: file "prova")
+cat prova
+
+Modify the file
+vi prova -> press i to insert
+
+Save changes in the file
+esc -> :wq -> enter
+
+
+
+To copy images (locally):
+
+Open a new terminal
+cd Desktop/Scripts
+
+Then (as example)
+python3 Copy_images.py --container_name stupefied_moore --source_path /tmp/Acquired_images/Sonar_images --dest_path ~/Desktop/Test/Range_20/Sonar_images
+
+
+
+To convert images (locally):
+
+Open a new terminal
+cd Desktop/Scripts
+
+Then (example)
+python3 Full_convert.py -i /home/firp/Desktop/Sonar_images -o /home/firp/Desktop/Converted_sonar_images --output_size 200,256 --range_max 20
+
+
+
+To automatically get sonar images (inside the container):
+
+While simulation is running, open a new terminal and enter inside the container and install what is missing to run the script (if it is necessary)
+sudo apt update
+sudo apt install ros-noetic-cv-bridge python3-opencv
+
+Then
+source ~/uuv_ws/devel/setup.bash
+Example
+python3 /tmp/Scripts/Get_sonar_images.py -o /tmp/Sonar_images
+
+
+
+To automatically get and convert sonar images (inside the container):
+
+While simulation is running, open a new terminal and enter inside the container and install what is missing to run the script (if it is necessary)
+sudo apt update
+sudo apt install ros-noetic-cv-bridge python3-opencv
+
+Then
+source ~/uuv_ws/devel/setup.bash
+Example
+python3 /tmp/Scripts/Get_converted_sonar_images.py -o /tmp/Converted_sonar_images --output_size 200,256 --range_max 20
+
+
+
+To automatically get the pose of the robot or of an object (inside the container):
+
+While simulation is running, open a new terminal and enter inside the container and install what is missing to run the script (if it is necessary)
+sudo apt update
+sudo apt install ros-noetic-cv-bridge python3-opencv
+
+Then
+source ~/uuv_ws/devel/setup.bash
+Example (replace NNNN with the name of the robot/object whose pose you want to get)
+python3 /tmp/Scripts/Get_pose.py NNNN
+
+
+
+To automatically modify the pose of the robot (inside the container):
+
+While simulation is running, open a new terminal and enter inside the container and install what is missing to run the script (if it is necessary)
+sudo apt update
+sudo apt install ros-noetic-cv-bridge python3-opencv
+
+Then
+source ~/uuv_ws/devel/setup.bash
+Example (replace the pose with the coordinates that are needed)
+python3 /tmp/Scripts/Modify_pose.py flatfish 362.33 -439.207 -4 0.0 0.0 -3.007
+
+
+
+To automatically run all the pipeline (inside the container):
+
+While simulation is running, open a new terminal and enter inside the container and install what is missing to run the script (if it is necessary)
+sudo apt update
+sudo apt install ros-noetic-cv-bridge python3-opencv
+
+Then
+source ~/uuv_ws/devel/setup.bash
+Example
+python3 /tmp/Scripts/Full_pipeline.py /tmp/Acquired_images/fan_imgs /tmp/Acquired_images/imgs /tmp/Acquired_images/poses 200,256 20 flatfish /tmp/Files/Poses.txt
+
+
+
+To automatically run all the pipeline that save the 360° converted sonar images (inside the container):
+
+While simulation is running, open a new terminal and enter inside the container and install what is missing to run the script (if it is necessary)
+sudo apt update
+sudo apt install ros-noetic-cv-bridge python3-opencv
+
+Then
+source ~/uuv_ws/devel/setup.bash
+Example
+python3 /tmp/Scripts/Full_pipeline_360.py /tmp/Acquired_images/fan_imgs /tmp/Acquired_images/imgs /tmp/Acquired_images/poses 200,256 20 flatfish /tmp/Files/Poses.txt
+
+
+
+To obtain dataset with 360° images:
+
+python3 /tmp/Scripts/Generate_grid.py 5 0.5 /tmp/Files
+
+python3 /tmp/Scripts/Full_pipeline_360.py /tmp/Acquired_images/fan_imgs /tmp/Acquired_images/imgs /tmp/Acquired_images/poses 200,256 20 flatfish /tmp/Files/Grid_poses.txt
+
+
+
+To get the full dataset:
+
+python3 /tmp/Scripts/Generate_grid.py 20 0.25 /tmp/Files
+
+python3 /tmp/Scripts/Generate_all_poses.py /tmp/Files
+
+python3 /tmp/Scripts/Full_pipeline.py /tmp/Acquired_images/raw_imgs /tmp/Acquired_images/fan_imgs /tmp/Acquired_images/imgs /tmp/Acquired_images/poses 200,256 20 flatfish /tmp/Files/All_poses.txt
+
+python3 /tmp/Scripts/Image_filtering.py /tmp/Acquired_images
+
+
+
+To convert to rectangular raw images (locally):
+
+cd Desktop/Scripts
+
+python3 Get_rectangular.py ~/Desktop/FILTERED/raw_imgs ~/Desktop/FILTERED/raw_imgs_rect 20 200,256
+
+
+
+To get validation and test set:
+
+python3 /tmp/Scripts/Generate_random_poses.py /tmp/Files 20 4000
+
+python3 /tmp/Scripts/Full_pipeline.py /tmp/Acquired_images/raw_imgs /tmp/Acquired_images/fan_imgs /tmp/Acquired_images/imgs /tmp/Acquired_images/poses 200,256 20 flatfish /tmp/Files/Validation_poses.txt
+
+python3 /tmp/Scripts/Full_pipeline.py /tmp/Acquired_images/raw_imgs /tmp/Acquired_images/fan_imgs /tmp/Acquired_images/imgs /tmp/Acquired_images/poses 200,256 20 flatfish /tmp/Files/Test_poses.txt
+
+python3 /tmp/Scripts/Image_filtering_random.py /tmp/Acquired_images
+
+
+
+To visualize poses (modify paths in the script in order to visualize what you need):
+
+python3 /tmp/Scripts/Visualize_poses.py /tmp/Files
+
+
+
+To trasnform pose and then get datasets (modify paths in the Transform_poses.py script and modify the second command in order to obtain the needed dataset):
+
+python3 /tmp/Scripts/Transform_poses.py /tmp/Files
+
+python3 /tmp/Scripts/Full_pipeline.py /tmp/Acquired_images/raw_imgs /tmp/Acquired_images/fan_imgs /tmp/Acquired_images/imgs /tmp/Acquired_images/poses 200,256 20 flatfish /tmp/Files/All_transformed_poses.txt /tmp/Files/All_poses.txt
